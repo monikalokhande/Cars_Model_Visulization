@@ -1,38 +1,45 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
 
-# Load your dataset
-# Assuming you already have the dataframe `df`
-# If loading from CSV: df = pd.read_csv('CARS.csv')
+st.title("Car Dataset Visualization")
 
-# Clean the MSRP column
-df['MSRP'] = df['MSRP'].replace('[$,]', '', regex=True).astype('int64')
+# Upload CSV file
+uploaded_file = st.file_uploader("Upload your car dataset CSV", type=["csv"])
 
-# Sidebar for brand selection
-st.sidebar.title("Filter")
-brand_list = df['Make'].unique()
-selected_brand = st.sidebar.selectbox("Select Brand", brand_list)
+if uploaded_file is not None:
+    # Load the dataset
+    df = pd.read_csv(uploaded_file)
 
-# Filter data based on selection
-brd = df[df['Make'] == selected_brand]
+    # Preprocess MSRP column if it exists
+    if 'MSRP' in df.columns:
+        df['MSRP'] = df['MSRP'].replace('[$,]', '', regex=True).astype('int64')
 
-# Show the filtered DataFrame (optional)
-st.subheader(f"Cars from {selected_brand}")
-st.dataframe(brd)
+    # Sidebar brand selector
+    brand_list = df['Make'].unique()
+    selected_brand = st.sidebar.selectbox("Select Brand", brand_list)
 
-# First Plot: Invoice by Type
-st.subheader(f"Invoice by Type for {selected_brand}")
-fig1, ax1 = plt.subplots(figsize=(10, 5))
-sb.barplot(x='Type', y='Invoice', data=brd, palette='winter', ax=ax1)
-plt.xticks(rotation=90)
-st.pyplot(fig1)
+    # Filter by selected brand
+    brd = df[df['Make'] == selected_brand]
 
-# Second Plot: MSRP by Model
-st.subheader(f"MSRP by Model for {selected_brand}")
-fig2, ax2 = plt.subplots(figsize=(10, 5))
-sb.barplot(x='Model', y='MSRP', data=brd, palette='summer', ax=ax2)
-plt.xticks(rotation=90)
-st.pyplot(fig2)
+    # Show the filtered data
+    st.subheader(f"Cars from {selected_brand}")
+    st.dataframe(brd)
+
+    # Invoice by Type
+    st.subheader("Invoice by Type")
+    fig1, ax1 = plt.subplots(figsize=(10, 5))
+    sb.barplot(x='Type', y='Invoice', data=brd, palette='winter', ax=ax1)
+    plt.xticks(rotation=90)
+    st.pyplot(fig1)
+
+    # MSRP by Model
+    st.subheader("MSRP by Model")
+    fig2, ax2 = plt.subplots(figsize=(12, 6))
+    sb.barplot(x='Model', y='MSRP', data=brd, palette='summer', ax=ax2)
+    plt.xticks(rotation=90)
+    st.pyplot(fig2)
+
+else:
+    st.info("Please upload a CSV file to begin.")
